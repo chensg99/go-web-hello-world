@@ -440,10 +440,9 @@ git push
 push all files to  remote github repo (https://github.com/chenshug99/go-web-hello-world)
 
 ```
+git config --global --edit
 git remote remove origin
 git remote add origin https://github.com/chensg99/go-web-hello-world.git
-git add .
-git commit -m "add files"
 git push -u origin master
 ```
 
