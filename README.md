@@ -1,16 +1,10 @@
-This is a demo project required by SRE role. 
-
-The candidate should be able to complete the project independently in two days and well document the procedure in a practical and well understanding way.
-
-It is not guaranteed that all tasks can be achieved as expected, in which circumstance, the candidate should trouble shoot the issue, conclude based on findings and document which/why/how.
-
 ### Task 0: Install a ubuntu 16.04 server 64-bit
 
 Install the virtualbox and ubuntu 16.04.6 VM.  
 
 Select the "OpenSSH server" package and create the user "test" during the installation.
 
-The ip addr of VM is 10.0.2.15
+The IP addr of VM is 10.0.2.15
 
 Use NAT network and  set the port forward in virtualbox:
 
@@ -20,7 +14,7 @@ Use NAT network and  set the port forward in virtualbox:
 
 ### Task 1: Update system
 
-From the  host machine ssh to guest machine through secureCRT tools using user test and port 2222.
+From the  host machine ssh to guest machine through secureCRT using user test and port 2222.
 
 To improve the update speed, use the aliyun sources instead of original sources.
 
@@ -63,7 +57,7 @@ sudo apt-get update
 sudo EXTERNAL_URL="http://10.0.2.15" apt-get install gitlab-ce
 ```
 
-Because the internet download speed is very slow, modify to use Tsinghua sources:
+Because the internet download speed is very slow, modify the sources to use Tsinghua sources:
 
 ```shell
 sudo vim /etc/apt/sources.list.d/gitlab_gitlab-ce.list
@@ -375,21 +369,83 @@ Check in the deployment yaml file into the gitlab repo
 
 ### Task 11: install kubernetes dashboard
 
-and expose the service to nodeport 31081
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
+```
 
-https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+expose the service to nodeport 31081
+
+```
+kubectl patch svc kubernetes-dashboard -n kubernetes-dashboard \
+-p '{"spec":{"type":"NodePort","ports":[{"port":443,"targetPort":8443,"nodePort":31081}]}}'
+```
 
 Expect output: https://127.0.0.1:31081 (asking for token)
 
 ### Task 12: generate token for dashboard login in task 11
 
-figure out how to generate token to login to the dashboard and publish the procedure to the gitlab.
+- create a ServiceAccount admin-user
+- ClusterRoleBinding the ServiceAccount to ClusterRole cluster-admin
+
+```
+cat > dashboard-adminuser.yaml << EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+kubectl apply -f dashboard-adminuser.yaml
+
+```
+
+- get the token info
+
+
+```
+kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}') |sed -n '/token:.*/p'
+
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6InBidXhvYzAzaDlwT3ZKLW8wTW9OT1hvWFc0STZxM3Ayc1k0YlVqaWl1WXMifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLW1xZmt0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI4YTZmNDI4NS1lMmFjLTQ4NTUtYjM5MC0yN2I5YzEwZDQwZjIiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZXJuZXRlcy1kYXNoYm9hcmQ6YWRtaW4tdXNlciJ9.XO9ug1AyEE2-JZc7O4wIfi_cN2ptX0mBSOTL12s5pwP27YgsUUvQjsXy1FltH3LjBdJHLK6UR_rVYgvwesGDyMFuwK_VwiVkxeV01eOtPeS6S4on6GS8XyL01r4PUlG3CHdsfmxUOXBX0UHUIysrDkEJTJMXhOLuqmYZojJN9vtlTyRhBQfzQtOnio_1RMiLhZZoJiaLGzwq7AvS_AeWq7XIYVvvS0SiCWXxAMazKG587-w6j4a-SM6naixTELR89d8DornHqPFocsvVdolbwA31wl-AKRIlWAupiIctYcuS926Tk9orBbXYA01UP-xuDNJPtLStYu_XXiYSIL45eA
+```
+
+
 
 --------------------------------------
 
 ### Task 13: publish your work
 
-push all files/procedures in your local gitlab repo to remote github repo (e.g. https://github.com/your_github_id/go-web-hello-world)
+push all files to local gitlab repo:
 
-if this is for an interview session, please send it to yijing.Zheng@ericsson.com, no later than two calendar days after the interview.
+```
+git add .
+git commit -m "add new files"
+git push
+```
+
+push all files to  remote github repo (https://github.com/chenshug99/go-web-hello-world)
+
+```
+git remote remove origin
+git remote add origin https://github.com/chensg99/go-web-hello-world.git
+git add .
+git commit -m "add files"
+git push -u origin master
+```
+
+
 
