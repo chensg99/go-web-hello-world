@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gowebapp
+  namespace: default
+spec:
+  selector:
+    app: gowebapp
+  type: NodePort
+  ports: 
+  - port: 8081
+    targetPort: 8081
+    nodePort: 31080
+
+---
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    app: gowebapp
+  name: gowebapp-deploy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gowebapp
+  template:
+    metadata:
+      labels:
+        app: gowebapp
+    spec:
+      containers:
+        - name: goweb
+          image: chensphere/go-web-hello-world:v0.1
+          ports:
+            - containerPort: 8081
+              protocol: TCP
