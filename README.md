@@ -355,7 +355,10 @@ spec:
               protocol: TCP
 ```
 
-
+apply the yaml file to create the service and deployment:
+```
+kubectl apply -f hello-nodeport.yaml
+```
 
 Expect output:
 ```
