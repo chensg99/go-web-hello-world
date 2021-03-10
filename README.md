@@ -440,7 +440,7 @@ git commit -m "add new files"
 git push
 ```
 
-push all files to  remote github repo (https://github.com/chenshug99/go-web-hello-world)
+push all files to  remote github repo (https://github.com/chensg99/go-web-hello-world)
 
 ```
 git config --global --edit
