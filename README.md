@@ -294,7 +294,7 @@ scheduler and controller-manager are **unhealthy**,  to solve the issue, it need
 
 ```shell
 sudo vim /etc/kubernetes/manifests/kube-scheduler.yaml
-sudo vim vim /etc/kubernetes/manifests/kube-controller-manager.yaml
+sudo vim /etc/kubernetes/manifests/kube-controller-manager.yaml
 #   - --port=0
 sudo service kubelet restart
 ```
